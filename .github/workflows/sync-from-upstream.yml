@@ -1,11 +1,7 @@
 name: Sync from aaronlee09-max/informatics
 
 on:
-  schedule:
-    - cron: '15 0 * * *'
   workflow_dispatch:
-  repository_dispatch:
-    types: [sync-from-informatics]
 
 permissions:
   contents: write
@@ -14,40 +10,18 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout current repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Fetch source of truth and sync
+      - name: Sync from main class repo
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git clone --depth 1 https://github.com/aaronlee09-max/informatics.git /tmp/upstream
-
-          cp CNAME /tmp/CNAME.bak 2>/dev/null || true
-          cp -r .github /tmp/github.bak 2>/dev/null || true
-
-          rsync -a --delete \
-            --exclude='.git' \
-            --exclude='CNAME' \
-            --exclude='.github' \
-            /tmp/upstream/ ./
-
-          if [ -f /tmp/CNAME.bak ]; then
-            cp /tmp/CNAME.bak CNAME
-          fi
-
-          if [ -d /tmp/github.bak ]; then
-            rm -rf .github
-            cp -r /tmp/github.bak .github
-          fi
-
+          git config user.name github-actions[bot]
+          git config user.email github-actions[bot]@users.noreply.github.com
+          git clone --depth 1 https://github.com/aaronlee09-max/informatics.git /tmp/src
+          cp CNAME /tmp/CNAME.bak
+          cp -r .github /tmp/github.bak
+          rsync -a --delete --exclude='.git' --exclude='CNAME' --exclude='.github' /tmp/src/ ./
+          cp /tmp/CNAME.bak CNAME
+          rm -rf .github && cp -r /tmp/github.bak .github
           git add -A
-          if git diff --staged --quiet; then
-            echo "Already up to date"
-          else
-            git commit -m "Sync from aaronlee09-max/informatics $(date -u +%Y-%m-%d)"
-            git push origin main
-          fi
+          if git diff --staged --quiet; then echo already synced; else git commit -m "Sync from informatics" && git push; fi
