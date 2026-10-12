@@ -20,6 +20,8 @@ On GitHub Pages, the app is static. Account secrets are not uploaded by the appl
 
 This is a prototype, not an independently audited authenticator. Encryption at rest helps protect a copied browser-storage file, but it does not protect secrets while the vault is unlocked. Anyone who can change the hosted JavaScript could change it to capture the passphrase or TOTP seeds. Do not use this site for high-value accounts unless you have reviewed and trust the code and hosting; a reputable native authenticator is safer for those accounts. Keep an encrypted backup in a secure location. If the vault passphrase is lost, this app cannot recover it.
 
+For the requested test, a shared ChatGPT OTP seed is included in this deployment's public JavaScript source. Anyone can generate its codes. Do not rely on it as account protection; after testing, re-enroll the authenticator with a fresh seed.
+
 The app supports TOTP provisioning URIs; it does not parse Google Authenticator's multi-account migration export or HOTP provisioning. Camera QR scanning depends on browser support; the setup URI can also be pasted manually.
 
 ## References

@@ -3,6 +3,15 @@ import { base32ToBytes, generateTotp, parseOtpAuthUri } from "./totp.js";
 const STORAGE_KEY = "webtronics-auth-vault-v1";
 const VAULT_VERSION = 1;
 const PBKDF2_ITERATIONS = 310_000;
+const DEFAULT_OTP_ACCOUNT = Object.freeze({
+  id: "shared-chatgpt-otp-test",
+  issuer: "ChatGPT",
+  account: "ChatGPT · 테스트 기본 항목",
+  secret: "NH7S5ZFOKOQCJWHBOPQTQEDNFUXHWZ7J",
+  algorithm: "SHA1",
+  digits: 6,
+  period: 30,
+});
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 const $ = (selector) => document.querySelector(selector);
@@ -31,6 +40,7 @@ const elements = {
 };
 
 let accounts = [];
+let defaultOtpAdded = false;
 let vaultKey = null;
 let vaultRecord = null;
 let refreshTimer = null;
@@ -121,7 +131,7 @@ async function deriveVaultKey(passphrase, salt, iterations) {
 async function encryptVault() {
   if (!vaultKey || !vaultRecord) throw new Error("보관함이 잠겨 있습니다.");
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const plaintext = encoder.encode(JSON.stringify({ accounts }));
+  const plaintext = encoder.encode(JSON.stringify({ accounts, defaultOtpAdded }));
   const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, vaultKey, plaintext);
   vaultRecord = {
     version: VAULT_VERSION,
@@ -155,7 +165,8 @@ async function createVault() {
       ciphertext: "",
     };
     vaultKey = await deriveVaultKey(passphrase, salt, PBKDF2_ITERATIONS);
-    accounts = [];
+    accounts = [{ ...DEFAULT_OTP_ACCOUNT }];
+    defaultOtpAdded = true;
     await encryptVault();
     elements.setupPassword.value = "";
     elements.setupPasswordConfirm.value = "";
@@ -187,6 +198,14 @@ async function unlockVault() {
     accounts = decoded.accounts;
     vaultKey = key;
     vaultRecord = record;
+    defaultOtpAdded = decoded.defaultOtpAdded === true;
+    if (!defaultOtpAdded) {
+      if (!accounts.some((account) => account.id === DEFAULT_OTP_ACCOUNT.id)) {
+        accounts.push({ ...DEFAULT_OTP_ACCOUNT });
+      }
+      defaultOtpAdded = true;
+      await encryptVault();
+    }
     elements.unlockPassword.value = "";
     enterVault();
   } catch {
@@ -213,6 +232,7 @@ function lockVault() {
   vaultKey = null;
   vaultRecord = null;
   accounts = [];
+  defaultOtpAdded = false;
   renderGeneration += 1;
   clearInterval(refreshTimer);
   clearInterval(autoLockTimer);
