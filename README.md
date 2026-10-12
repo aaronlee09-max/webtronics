@@ -8,7 +8,7 @@ A dependency-free, static browser app for generating time-based one-time passwor
 - Manual Base32 secret entry, `otpauth://totp/…` URI import, and camera QR scanning where the browser supports `BarcodeDetector`.
 - AES-GCM encrypted local vault. A passphrase-derived key is made with PBKDF2/SHA-256; the key and decrypted entries stay in memory only while the vault is unlocked.
 - Five-minute inactivity lock and encrypted JSON backup/restore.
-- A daily `YYMMDD!!` screen prompt based on Asia/Seoul time; this is a cosmetic prompt, not authentication.
+- A daily `YYMMDD!!` screen prompt based on Asia/Seoul time; this is a cosmetic prompt, not authentication. Existing encrypted vaults still require their original passphrase; they cannot be reset without decryption.
 - No analytics, external JavaScript, account login, backend, or secret synchronization.
 
 ## Run locally
