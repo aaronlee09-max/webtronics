@@ -20,4 +20,10 @@ On GitHub Pages, the app is static. Account secrets are not uploaded by the appl
 
 This is a prototype, not an independently audited authenticator. Encryption at rest helps protect a copied browser-storage file, but it does not protect secrets while the vault is unlocked. Anyone who can change the hosted JavaScript could change it to capture the passphrase or TOTP seeds. Do not use this site for high-value accounts unless you have reviewed and trust the code and hosting; a reputable native authenticator is safer for those accounts. Keep an encrypted backup in a secure location. If the vault passphrase is lost, this app cannot recover it.
 
-The app supports TOTP provisioning URIs; it does not parse Google Authenticator's multi-account migration export or HOTP provisioning.
+The app supports TOTP provisioning URIs; it does not parse Google Authenticator's multi-account migration export or HOTP provisioning. Camera QR scanning depends on browser support; the setup URI can also be pasted manually.
+
+## References
+
+- [RFC 6238: TOTP](https://www.rfc-editor.org/rfc/rfc6238.html) — algorithm, time-step calculation, and test vectors.
+- [Google Authenticator Key URI Format](https://github.com/google/google-authenticator/wiki/Key-Uri-Format) — `otpauth://` provisioning URI structure.
+- [MDN: SubtleCrypto](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto) — browser cryptography API and security caveats.
