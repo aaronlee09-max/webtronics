@@ -4,12 +4,12 @@ const STORAGE_KEY = "webtronics-auth-vault-v1";
 const VAULT_VERSION = 1;
 const PBKDF2_ITERATIONS = 310_000;
 const DAILY_GATE_SESSION_KEY = "webtronics-demo-gate-day";
-const DEFAULT_OTP_VERSION = 2;
+const DEFAULT_OTP_VERSION = 3;
 const DEFAULT_OTP_ACCOUNT = Object.freeze({
   id: "shared-chatgpt-otp-test",
   issuer: "ChatGPT",
   account: "ChatGPT · 테스트 기본 항목",
-  secret: "JTNQQDSXMNHX3LXKAKGZ47JRKPESC2UG",
+  secret: "NNXQIYMQBI5MDEZOWFF5JEF43GMBQTZP",
   algorithm: "SHA1",
   digits: 6,
   period: 30,
