@@ -1,185 +1,154 @@
 <!doctype html>
 <html lang="ko">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>정보</title>
-    <style>
-      :root {
-        --bg: #f7fafc;
-        --paper: #ffffff;
-        --ink: #172033;
-        --muted: #5c6b7d;
-        --line: #d7e0ea;
-        --blue: #2563eb;
-        --green: #159957;
-        --orange: #f28c28;
-        --red: #e84a5f;
-        --purple: #7c3aed;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        min-height: 100vh;
-        margin: 0;
-        background: var(--bg);
-        color: var(--ink);
-        font-family: "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
-      }
-
-      .page {
-        width: min(1120px, calc(100% - 48px));
-        margin: 0 auto;
-        padding: 64px 0;
-      }
-
-      header {
-        margin-bottom: 34px;
-      }
-
-      h1 {
-        margin: 0;
-        font-size: clamp(44px, 7vw, 82px);
-        line-height: 1;
-      }
-
-      .courses {
-        display: grid;
-        gap: 14px;
-      }
-
-      .course {
-        display: grid;
-        grid-template-columns: 116px 1fr auto;
-        align-items: center;
-        gap: 24px;
-        min-height: 118px;
-        border: 2px solid var(--line);
-        border-radius: 8px;
-        padding: 22px 26px;
-        background: var(--paper);
-        color: inherit;
-        text-decoration: none;
-        box-shadow: 0 10px 30px rgba(23, 32, 51, 0.06);
-        transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
-      }
-
-      .course:hover,
-      .course:focus-visible {
-        transform: translateY(-2px);
-        border-color: rgba(37, 99, 235, 0.4);
-        box-shadow: 0 16px 38px rgba(23, 32, 51, 0.1);
-      }
-
-      .number {
-        color: var(--blue);
-        font-size: 42px;
-        font-weight: 900;
-      }
-
-      .course:nth-child(2) .number { color: var(--green); }
-      .course:nth-child(3) .number { color: var(--orange); }
-      .course:nth-child(4) .number { color: var(--red); }
-      .course:nth-child(5) .number { color: var(--purple); }
-
-      .title {
-        display: grid;
-        gap: 6px;
-      }
-
-      .title b {
-        font-size: clamp(28px, 3vw, 40px);
-        line-height: 1.12;
-      }
-
-      .title span {
-        color: var(--muted);
-        font-size: 18px;
-        font-weight: 800;
-      }
-
-      .action {
-        border-radius: 999px;
-        padding: 12px 18px;
-        background: #eef5ff;
-        color: var(--blue);
-        font-size: 18px;
-        font-weight: 900;
-      }
-
-      @media (max-width: 720px) {
-        .page {
-          width: min(100% - 28px, 1120px);
-          padding: 36px 0;
-        }
-
-        .course {
-          grid-template-columns: 1fr;
-          gap: 12px;
-          min-height: 0;
-        }
-
-        .action {
-          width: max-content;
-        }
-      }
-    </style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#101827" />
+    <meta name="description" content="브라우저에서만 동작하는 TOTP 인증 코드 생성기" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'" />
+    <title>인증 코드</title>
+    <link rel="stylesheet" href="./app.css" />
+    <script type="module" src="./app.js"></script>
   </head>
   <body>
-    <main class="page">
-      <header>
-        <h1>정보</h1>
-      </header>
+    <main class="shell">
+      <section id="setup-panel" class="gate-panel" hidden>
+        <div class="brand-mark" aria-hidden="true">2F</div>
+        <p class="eyebrow">로컬 전용 인증기</p>
+        <h1>암호화 보관함 만들기</h1>
+        <p class="lead">인증 시드와 코드는 이 브라우저 안에서만 처리됩니다. 보관함은 암호로 암호화되어 이 기기에 저장됩니다.</p>
+        <div id="setup-form" class="stack-form">
+          <label for="setup-password">보관함 암호</label>
+          <input id="setup-password" type="password" minlength="12" autocomplete="new-password" required />
+          <label for="setup-password-confirm">암호 확인</label>
+          <input id="setup-password-confirm" type="password" minlength="12" autocomplete="new-password" required />
+          <button id="create-vault-button" class="primary-button" type="button">보관함 만들기</button>
+        </div>
+        <aside class="security-note">
+          <strong>중요</strong>
+          <span>암호를 잊으면 보관함을 복구할 수 없습니다. 이 앱은 보안 감사를 받지 않았습니다. 중요한 계정에 사용하기 전에 직접 검토하고, 가능하면 신뢰할 수 있는 전용 인증기나 오프라인 사본을 사용하세요.</span>
+        </aside>
+      </section>
 
-      <section class="courses" aria-label="정보 교과군 메뉴">
-        <a class="course" href="./curriculum/">
-          <span class="number">00</span>
-          <span class="title">
-            <b>교육과정</b>
-            <span>정보 교과군의 과목 구성과 학습 경로</span>
-          </span>
-          <span class="action">열기</span>
-        </a>
+      <section id="unlock-panel" class="gate-panel" hidden>
+        <div class="brand-mark" aria-hidden="true">2F</div>
+        <p class="eyebrow">로컬 전용 인증기</p>
+        <h1>보관함 잠금 해제</h1>
+        <p class="lead">이 브라우저에 저장된 암호화 보관함을 엽니다.</p>
+        <div id="unlock-form" class="stack-form">
+          <label for="unlock-password">보관함 암호</label>
+          <input id="unlock-password" type="password" autocomplete="current-password" required />
+          <button id="unlock-submit-button" class="primary-button" type="button">잠금 해제</button>
+        </div>
+        <div class="backup-tools">
+          <label class="secondary-button file-button">
+            암호화 백업 복원
+            <input id="backup-import" type="file" accept="application/json,.json" />
+          </label>
+          <p>백업을 만들 때 사용한 보관함 암호가 필요합니다.</p>
+        </div>
+        <aside class="security-note">
+          <strong>보안 안내</strong>
+          <span>호스팅된 웹페이지의 코드는 보관함이 잠금 해제될 때 시드에 접근할 수 있습니다. 민감한 계정에는 신뢰하지 않는 웹 인증기를 사용하지 마세요.</span>
+        </aside>
+      </section>
 
-        <a class="course" href="./informatics/">
-          <span class="number">01</span>
-          <span class="title">
-            <b>정보</b>
-            <span>정보 수업 콘텐츠</span>
-          </span>
-          <span class="action">열기</span>
-        </a>
+      <section id="vault-panel" class="vault-panel" hidden>
+        <header class="topbar">
+          <div class="brand-lockup">
+            <div class="brand-mark small" aria-hidden="true">2F</div>
+            <div>
+              <p class="eyebrow">로컬 전용 인증기</p>
+              <h1>인증 코드</h1>
+            </div>
+          </div>
+          <div class="top-actions">
+            <button id="backup-button" class="secondary-button" type="button">암호화 백업</button>
+            <button id="lock-button" class="icon-button" type="button">잠금</button>
+          </div>
+        </header>
 
-        <a class="course" href="./ai/">
-          <span class="number">02</span>
-          <span class="title">
-            <b>인공지능 기초</b>
-            <span>인공지능 기초 수업 콘텐츠</span>
-          </span>
-          <span class="action">열기</span>
-        </a>
+        <section class="security-banner" aria-label="데이터 처리 안내">
+          <span class="shield" aria-hidden="true">●</span>
+          <p><strong>기기 내 처리</strong> — 인증 정보는 이 브라우저의 암호화 보관함에 저장되며 서버로 전송되지 않습니다. 단, 이 사이트의 코드 자체는 보관함을 열었을 때 시드에 접근할 수 있습니다.</p>
+        </section>
 
-        <a class="course" href="./data/">
-          <span class="number">03</span>
-          <span class="title">
-            <b>데이터과학</b>
-            <span>데이터과학 수업 콘텐츠</span>
-          </span>
-          <span class="action">열기</span>
-        </a>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">TIME-BASED ONE-TIME PASSWORD</p>
+            <h2>내 계정</h2>
+          </div>
+          <button id="add-account-button" class="primary-button add-button" type="button"><span aria-hidden="true">＋</span> 계정 추가</button>
+        </div>
 
-        <a class="course" href="./software/">
-          <span class="number">04</span>
-          <span class="title">
-            <b>소프트웨어와 생활</b>
-            <span>소프트웨어와 생활 수업 콘텐츠</span>
-          </span>
-          <span class="action">열기</span>
-        </a>
+        <div id="account-list" class="account-list" aria-live="polite"></div>
+        <div id="empty-state" class="empty-state" hidden>
+          <div class="empty-icon" aria-hidden="true">•••</div>
+          <h3>아직 계정이 없습니다</h3>
+          <p>서비스에서 받은 TOTP 설정 QR 코드를 스캔하거나 `otpauth://` 설정 URI를 붙여 넣으세요.</p>
+        </div>
+
+        <footer class="app-footer">
+          <p>TOTP는 RFC 6238 표준을 따릅니다. 이 웹앱은 계정 복구 수단이 아니며, 기기 시간과 서비스 시간이 다르면 코드가 맞지 않을 수 있습니다.</p>
+          <a href="https://www.rfc-editor.org/rfc/rfc6238.html" target="_blank" rel="noreferrer">TOTP 표준</a>
+        </footer>
       </section>
     </main>
+
+    <dialog id="add-dialog" class="account-dialog">
+      <div id="add-form" class="dialog-content">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">계정 등록</p>
+            <h2>인증 계정 추가</h2>
+          </div>
+          <button id="cancel-add" class="icon-button" type="button" aria-label="닫기">닫기</button>
+        </div>
+
+        <div class="import-box">
+          <label for="add-uri">설정 URI 붙여넣기</label>
+          <textarea id="add-uri" rows="3" spellcheck="false" placeholder="otpauth://totp/서비스:계정?secret=…"></textarea>
+          <div class="button-row">
+            <button id="parse-uri-button" class="secondary-button" type="button">URI 읽기</button>
+            <button id="scan-qr-button" class="secondary-button" type="button">카메라로 QR 스캔</button>
+          </div>
+          <div id="scanner-panel" class="scanner-panel" hidden>
+            <video id="qr-video" playsinline muted></video>
+            <button id="stop-qr-button" class="secondary-button" type="button">스캔 중지</button>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label for="issuer">서비스 이름 <span>선택</span></label>
+          <input id="issuer" type="text" autocomplete="organization" maxlength="120" placeholder="예: Example" />
+          <label for="account">계정 이름</label>
+          <input id="account" type="text" autocomplete="username" maxlength="180" required placeholder="예: name@example.com" />
+          <label for="secret">Base32 시드</label>
+          <input id="secret" type="text" inputmode="latin" autocapitalize="characters" autocomplete="off" spellcheck="false" required placeholder="QR 코드에서 받은 시드" />
+          <div class="form-row">
+            <label for="algorithm">알고리즘</label>
+            <label for="digits">자릿수</label>
+            <select id="algorithm">
+              <option value="SHA1">SHA-1</option>
+              <option value="SHA256">SHA-256</option>
+              <option value="SHA512">SHA-512</option>
+            </select>
+            <select id="digits">
+              <option value="6">6자리</option>
+              <option value="8">8자리</option>
+            </select>
+          </div>
+          <label for="period">코드 갱신 주기 (초)</label>
+          <input id="period" type="number" min="1" max="86400" value="30" required />
+        </div>
+
+        <p class="dialog-warning">인증 시드는 비밀번호와 같습니다. 공개되었거나 신뢰할 수 없는 웹사이트에 입력하지 마세요.</p>
+        <div class="dialog-actions">
+          <button id="save-account-button" class="primary-button" type="button">이 기기에 저장</button>
+        </div>
+      </div>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
   </body>
 </html>

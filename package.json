@@ -1,0 +1,8 @@
+{
+  "name": "webtronics-local-authenticator",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/totp.test.mjs"
+  }
+}
