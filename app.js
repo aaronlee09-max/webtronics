@@ -4,11 +4,12 @@ const STORAGE_KEY = "webtronics-auth-vault-v1";
 const VAULT_VERSION = 1;
 const PBKDF2_ITERATIONS = 310_000;
 const DAILY_GATE_SESSION_KEY = "webtronics-demo-gate-day";
+const DEFAULT_OTP_VERSION = 2;
 const DEFAULT_OTP_ACCOUNT = Object.freeze({
   id: "shared-chatgpt-otp-test",
   issuer: "ChatGPT",
   account: "ChatGPT · 테스트 기본 항목",
-  secret: "NH7S5ZFOKOQCJWHBOPQTQEDNFUXHWZ7J",
+  secret: "JTNQQDSXMNHX3LXKAKGZ47JRKPESC2UG",
   algorithm: "SHA1",
   digits: 6,
   period: 30,
@@ -44,7 +45,7 @@ const elements = {
 };
 
 let accounts = [];
-let defaultOtpAdded = false;
+let defaultOtpVersion = 0;
 let vaultKey = null;
 let vaultRecord = null;
 let refreshTimer = null;
@@ -180,7 +181,7 @@ async function deriveVaultKey(passphrase, salt, iterations) {
 async function encryptVault() {
   if (!vaultKey || !vaultRecord) throw new Error("보관함이 잠겨 있습니다.");
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const plaintext = encoder.encode(JSON.stringify({ accounts, defaultOtpAdded }));
+  const plaintext = encoder.encode(JSON.stringify({ accounts, defaultOtpVersion }));
   const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, vaultKey, plaintext);
   vaultRecord = {
     version: VAULT_VERSION,
@@ -215,7 +216,7 @@ async function createVault() {
     };
     vaultKey = await deriveVaultKey(passphrase, salt, PBKDF2_ITERATIONS);
     accounts = [{ ...DEFAULT_OTP_ACCOUNT }];
-    defaultOtpAdded = true;
+    defaultOtpVersion = DEFAULT_OTP_VERSION;
     await encryptVault();
     elements.setupPassword.value = "";
     elements.setupPasswordConfirm.value = "";
@@ -247,12 +248,14 @@ async function unlockVault() {
     accounts = decoded.accounts;
     vaultKey = key;
     vaultRecord = record;
-    defaultOtpAdded = decoded.defaultOtpAdded === true;
-    if (!defaultOtpAdded) {
-      if (!accounts.some((account) => account.id === DEFAULT_OTP_ACCOUNT.id)) {
-        accounts.push({ ...DEFAULT_OTP_ACCOUNT });
-      }
-      defaultOtpAdded = true;
+    defaultOtpVersion = Number.isSafeInteger(decoded.defaultOtpVersion)
+      ? decoded.defaultOtpVersion
+      : decoded.defaultOtpAdded === true ? 1 : 0;
+    if (defaultOtpVersion < DEFAULT_OTP_VERSION) {
+      const defaultIndex = accounts.findIndex((account) => account.id === DEFAULT_OTP_ACCOUNT.id);
+      if (defaultIndex >= 0) accounts[defaultIndex] = { ...DEFAULT_OTP_ACCOUNT };
+      else accounts.push({ ...DEFAULT_OTP_ACCOUNT });
+      defaultOtpVersion = DEFAULT_OTP_VERSION;
       await encryptVault();
     }
     elements.unlockPassword.value = "";
@@ -281,7 +284,7 @@ function lockVault() {
   vaultKey = null;
   vaultRecord = null;
   accounts = [];
-  defaultOtpAdded = false;
+  defaultOtpVersion = 0;
   renderGeneration += 1;
   clearInterval(refreshTimer);
   clearInterval(autoLockTimer);
