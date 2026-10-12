@@ -84,6 +84,7 @@ h3 { margin-bottom: 8px; }
   color: var(--ink);
 }
 .stack-form input { margin-bottom: 8px; }
+.gate-error { min-height: 1.25em; margin: -2px 0 0; color: #a52b39; font-size: 12px; font-weight: 750; }
 .import-box textarea { min-height: 82px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
 .primary-button, .secondary-button, .icon-button, .copy-button {
   display: inline-flex;

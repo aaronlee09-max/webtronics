@@ -3,6 +3,7 @@ import { base32ToBytes, generateTotp, parseOtpAuthUri } from "./totp.js";
 const STORAGE_KEY = "webtronics-auth-vault-v1";
 const VAULT_VERSION = 1;
 const PBKDF2_ITERATIONS = 310_000;
+const DAILY_GATE_SESSION_KEY = "webtronics-demo-gate-day";
 const DEFAULT_OTP_ACCOUNT = Object.freeze({
   id: "shared-chatgpt-otp-test",
   issuer: "ChatGPT",
@@ -17,6 +18,9 @@ const decoder = new TextDecoder();
 const $ = (selector) => document.querySelector(selector);
 
 const elements = {
+  dateGate: $("#date-gate"),
+  dailyDemoPassword: $("#daily-demo-password"),
+  dailyGateError: $("#daily-gate-error"),
   setupPanel: $("#setup-panel"),
   unlockPanel: $("#unlock-panel"),
   vaultPanel: $("#vault-panel"),
@@ -45,6 +49,7 @@ let vaultKey = null;
 let vaultRecord = null;
 let refreshTimer = null;
 let autoLockTimer = null;
+let dailyGateTimer = null;
 let toastTimer = null;
 let lastActivity = Date.now();
 let qrStream = null;
@@ -72,8 +77,52 @@ function showToast(message, kind = "info") {
 }
 
 function showOnly(panel) {
-  for (const candidate of [elements.setupPanel, elements.unlockPanel, elements.vaultPanel]) {
+  for (const candidate of [elements.dateGate, elements.setupPanel, elements.unlockPanel, elements.vaultPanel]) {
     candidate.hidden = candidate !== panel;
+  }
+}
+
+function seoulDayKey() {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Seoul",
+    year: "2-digit",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const value = (type) => parts.find((part) => part.type === type)?.value || "";
+  return `${value("year")}${value("month")}${value("day")}`;
+}
+
+function showVaultOrUnlock() {
+  try {
+    showOnly(readStoredRecord() ? elements.unlockPanel : elements.setupPanel);
+  } catch (error) {
+    showOnly(elements.unlockPanel);
+    showToast(error.message, "error");
+  }
+}
+
+function submitDailyDemoGate() {
+  const day = seoulDayKey();
+  if (elements.dailyDemoPassword.value.trim() !== `${day}!!`) {
+    elements.dailyGateError.textContent = "코드가 맞지 않습니다. 오늘 날짜와 느낌표 두 개를 확인하세요.";
+    return;
+  }
+  sessionStorage.setItem(DAILY_GATE_SESSION_KEY, day);
+  elements.dailyDemoPassword.value = "";
+  elements.dailyGateError.textContent = "";
+  showVaultOrUnlock();
+}
+
+function checkDailyGateDate() {
+  const acceptedDay = sessionStorage.getItem(DAILY_GATE_SESSION_KEY);
+  if (acceptedDay && acceptedDay !== seoulDayKey()) {
+    sessionStorage.removeItem(DAILY_GATE_SESSION_KEY);
+    if (vaultKey) lockVault();
+    elements.dailyDemoPassword.value = "";
+    elements.dailyGateError.textContent = "";
+    showOnly(elements.dateGate);
+    showToast("한국 날짜가 바뀌어 화면 프롬프트가 다시 잠겼습니다.");
   }
 }
 
@@ -519,13 +568,17 @@ function initialize() {
     return;
   }
 
-  try {
-    showOnly(readStoredRecord() ? elements.unlockPanel : elements.setupPanel);
-  } catch (error) {
-    showOnly(elements.unlockPanel);
-    showToast(error.message, "error");
+  if (sessionStorage.getItem(DAILY_GATE_SESSION_KEY) === seoulDayKey()) {
+    showVaultOrUnlock();
+  } else {
+    showOnly(elements.dateGate);
   }
 
+  $("#daily-gate-submit").addEventListener("click", submitDailyDemoGate);
+  elements.dailyDemoPassword.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") submitDailyDemoGate();
+  });
+  dailyGateTimer = setInterval(checkDailyGateDate, 30_000);
   $("#create-vault-button").addEventListener("click", createVault);
   $("#unlock-submit-button").addEventListener("click", unlockVault);
   $("#save-account-button").addEventListener("click", addAccountFromInputs);

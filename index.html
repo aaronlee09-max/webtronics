@@ -12,6 +12,23 @@
   </head>
   <body>
     <main class="shell">
+      <section id="date-gate" class="gate-panel" hidden>
+        <div class="brand-mark" aria-hidden="true">2F</div>
+        <p class="eyebrow">DAILY DEMO PROMPT</p>
+        <h1>오늘의 접속 코드</h1>
+        <p class="lead">한국(서울) 날짜를 YYMMDD로 적고 느낌표 두 개를 붙이세요. 예: 261012!!</p>
+        <div class="stack-form">
+          <label for="daily-demo-password">오늘의 코드</label>
+          <input id="daily-demo-password" type="password" maxlength="8" autocomplete="off" placeholder="YYMMDD!!" />
+          <button id="daily-gate-submit" class="primary-button" type="button">계속</button>
+        </div>
+        <p id="daily-gate-error" class="gate-error" role="status" aria-live="polite"></p>
+        <aside class="security-note public-seed-warning">
+          <strong>보안 한계</strong>
+          <span>이것은 단순 화면 프롬프트이며 실제 보안 잠금이 아닙니다. 코드 규칙은 공개되어 누구나 계산할 수 있습니다. 테스트용 ChatGPT OTP 시드도 공개 코드에 포함되어 있으므로 테스트 후 인증기를 재설정하세요.</span>
+        </aside>
+      </section>
+
       <section id="setup-panel" class="gate-panel" hidden>
         <div class="brand-mark" aria-hidden="true">2F</div>
         <p class="eyebrow">로컬 전용 인증기</p>

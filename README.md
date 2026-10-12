@@ -8,6 +8,7 @@ A dependency-free, static browser app for generating time-based one-time passwor
 - Manual Base32 secret entry, `otpauth://totp/…` URI import, and camera QR scanning where the browser supports `BarcodeDetector`.
 - AES-GCM encrypted local vault. A passphrase-derived key is made with PBKDF2/SHA-256; the key and decrypted entries stay in memory only while the vault is unlocked.
 - Five-minute inactivity lock and encrypted JSON backup/restore.
+- A daily `YYMMDD!!` screen prompt based on Asia/Seoul time; this is a cosmetic prompt, not authentication.
 - No analytics, external JavaScript, account login, backend, or secret synchronization.
 
 ## Run locally
@@ -21,6 +22,8 @@ On GitHub Pages, the app is static. Account secrets are not uploaded by the appl
 This is a prototype, not an independently audited authenticator. Encryption at rest helps protect a copied browser-storage file, but it does not protect secrets while the vault is unlocked. Anyone who can change the hosted JavaScript could change it to capture the passphrase or TOTP seeds. Do not use this site for high-value accounts unless you have reviewed and trust the code and hosting; a reputable native authenticator is safer for those accounts. Keep an encrypted backup in a secure location. If the vault passphrase is lost, this app cannot recover it.
 
 For the requested test, a shared ChatGPT OTP seed is included in this deployment's public JavaScript source. Anyone can generate its codes. Do not rely on it as account protection; after testing, re-enroll the authenticator with a fresh seed.
+
+The daily prompt is also calculated in public client-side code, so anyone can determine or bypass it. It only adds a screen; the separate vault passphrase still encrypts local entries. It must not be treated as protection for OTP secrets.
 
 The app supports TOTP provisioning URIs; it does not parse Google Authenticator's multi-account migration export or HOTP provisioning. Camera QR scanning depends on browser support; the setup URI can also be pasted manually.
 
