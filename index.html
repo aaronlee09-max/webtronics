@@ -16,16 +16,16 @@
         <div class="brand-mark" aria-hidden="true">2F</div>
         <p class="eyebrow">DAILY DEMO PROMPT</p>
         <h1>오늘의 접속 코드</h1>
-        <p class="lead">한국(서울) 날짜를 YYMMDD로 적고 느낌표 두 개를 붙이세요. 예: 261012!!</p>
+        <p class="lead">한국(서울) 날짜를 YYMMDD 6자리로 입력하세요. 예: 261023</p>
         <div class="stack-form">
           <label for="daily-demo-password">오늘의 코드</label>
-          <input id="daily-demo-password" type="password" maxlength="8" autocomplete="off" placeholder="YYMMDD!!" />
+          <input id="daily-demo-password" type="password" maxlength="6" inputmode="numeric" autocomplete="off" placeholder="YYMMDD" />
           <button id="daily-gate-submit" class="primary-button" type="button">계속</button>
         </div>
         <p id="daily-gate-error" class="gate-error" role="status" aria-live="polite"></p>
         <aside class="security-note public-seed-warning">
           <strong>보안 한계</strong>
-          <span>이것은 단순 화면 프롬프트이며 실제 보안 잠금이 아닙니다. 코드 규칙은 공개되어 누구나 계산할 수 있습니다. 테스트용 ChatGPT OTP 시드도 공개 코드에 포함되어 있으므로 테스트 후 인증기를 재설정하세요.</span>
+          <span>이것은 단순 화면 프롬프트이며 실제 보안 잠금이 아닙니다. 코드 규칙은 공개되어 누구나 계산할 수 있습니다. 실제 잠금은 다음 단계의 동아리 공용 비밀번호입니다.</span>
         </aside>
       </section>
 
@@ -35,15 +35,15 @@
         <h1>암호화 보관함 만들기</h1>
         <p class="lead">인증 시드와 코드는 이 브라우저 안에서만 처리됩니다. 보관함은 암호로 암호화되어 이 기기에 저장됩니다.</p>
         <div id="setup-form" class="stack-form">
-          <label for="setup-password">보관함 암호</label>
+          <label for="setup-password">보관함 암호 (동아리 공용 비밀번호)</label>
           <input id="setup-password" type="password" minlength="12" autocomplete="new-password" required />
           <label for="setup-password-confirm">암호 확인</label>
           <input id="setup-password-confirm" type="password" minlength="12" autocomplete="new-password" required />
           <button id="create-vault-button" class="primary-button" type="button">보관함 만들기</button>
         </div>
         <aside class="security-note public-seed-warning">
-          <strong>공개 테스트 시드 경고</strong>
-          <span>ChatGPT 테스트 OTP 시드가 공개 사이트 코드에 포함되어 있습니다. 모든 방문자가 코드를 생성할 수 있으니 실제 계정 보호에 사용하지 말고, 테스트 후 인증기를 재설정하세요.</span>
+          <strong>공용 비밀번호 안내</strong>
+          <span>동아리 공용 OTP 시드는 비밀번호로 암호화된 파일로만 공개되어 있습니다. 보관함 암호에 동아리 공용 비밀번호를 입력해야 항목이 열립니다. 비밀번호를 공유하지 마세요.</span>
         </aside>
         <aside class="security-note">
           <strong>중요</strong>
@@ -69,8 +69,8 @@
           <p>백업을 만들 때 사용한 보관함 암호가 필요합니다.</p>
         </div>
         <aside class="security-note public-seed-warning">
-          <strong>공개 테스트 시드 경고</strong>
-          <span>ChatGPT 테스트 OTP 시드가 공개 사이트 코드에 포함되어 있습니다. 모든 방문자가 코드를 생성할 수 있으니 실제 계정 보호에 사용하지 말고, 테스트 후 인증기를 재설정하세요.</span>
+          <strong>공용 비밀번호 안내</strong>
+          <span>동아리 공용 OTP 시드는 비밀번호로 암호화된 파일로만 공개되어 있습니다. 보관함 암호에 동아리 공용 비밀번호를 입력해야 항목이 열립니다. 비밀번호를 공유하지 마세요.</span>
         </aside>
         <aside class="security-note">
           <strong>보안 안내</strong>
@@ -98,8 +98,8 @@
           <p><strong>기기 내 처리</strong> — 인증 정보는 이 브라우저의 암호화 보관함에 저장되며 서버로 전송되지 않습니다. 단, 이 사이트의 코드 자체는 보관함을 열었을 때 시드에 접근할 수 있습니다.</p>
         </section>
         <aside class="security-note public-seed-warning">
-          <strong>공개 테스트 시드 경고</strong>
-          <span>ChatGPT 테스트 OTP 시드가 공개 사이트 코드에 포함되어 있습니다. 모든 방문자가 코드를 생성할 수 있으니 실제 계정 보호에 사용하지 말고, 테스트 후 인증기를 재설정하세요.</span>
+          <strong>공용 비밀번호 안내</strong>
+          <span>동아리 공용 OTP 시드는 비밀번호로 암호화된 파일로만 공개되어 있습니다. 보관함 암호에 동아리 공용 비밀번호를 입력해야 항목이 열립니다. 비밀번호를 공유하지 마세요.</span>
         </aside>
 
         <div class="section-heading">

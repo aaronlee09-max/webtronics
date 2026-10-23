@@ -4,16 +4,8 @@ const STORAGE_KEY = "webtronics-auth-vault-v1";
 const VAULT_VERSION = 1;
 const PBKDF2_ITERATIONS = 310_000;
 const DAILY_GATE_SESSION_KEY = "webtronics-demo-gate-day";
-const DEFAULT_OTP_VERSION = 3;
-const DEFAULT_OTP_ACCOUNT = Object.freeze({
-  id: "shared-chatgpt-otp-test",
-  issuer: "ChatGPT",
-  account: "ChatGPT · 테스트 기본 항목",
-  secret: "NNXQIYMQBI5MDEZOWFF5JEF43GMBQTZP",
-  algorithm: "SHA1",
-  digits: 6,
-  period: 30,
-});
+const DEFAULT_OTP_VERSION = 4;
+const SHARED_SEEDS_URL = "./seeds.enc.json";
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 const $ = (selector) => document.querySelector(selector);
@@ -105,8 +97,8 @@ function showVaultOrUnlock() {
 
 function submitDailyDemoGate() {
   const day = seoulDayKey();
-  if (elements.dailyDemoPassword.value.trim() !== `${day}!!`) {
-    elements.dailyGateError.textContent = "코드가 맞지 않습니다. 오늘 날짜와 느낌표 두 개를 확인하세요.";
+  if (elements.dailyDemoPassword.value.trim() !== day) {
+    elements.dailyGateError.textContent = "코드가 맞지 않습니다. 오늘 한국 날짜를 YYMMDD 6자리로 입력하세요.";
     return;
   }
   sessionStorage.setItem(DAILY_GATE_SESSION_KEY, day);
@@ -178,6 +170,31 @@ async function deriveVaultKey(passphrase, salt, iterations) {
   );
 }
 
+// The shared accounts are published only as AES-GCM ciphertext. The vault
+// passphrase is also the shared passphrase, so a wrong one cannot decrypt them.
+async function loadSharedAccounts(passphrase) {
+  const response = await fetch(SHARED_SEEDS_URL, { cache: "no-store" });
+  if (!response.ok) throw new Error("공유 항목 파일을 불러오지 못했습니다.");
+  const record = await response.json();
+  const key = await deriveVaultKey(passphrase, base64ToBytes(record.salt), record.iterations);
+  const plaintext = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: base64ToBytes(record.iv) },
+    key,
+    base64ToBytes(record.ciphertext),
+  );
+  const decoded = JSON.parse(decoder.decode(plaintext));
+  if (!decoded || !Array.isArray(decoded.accounts)) throw new Error("공유 항목 형식이 올바르지 않습니다.");
+  return decoded.accounts;
+}
+
+function mergeSharedAccounts(shared) {
+  for (const sharedAccount of shared) {
+    const index = accounts.findIndex((account) => account.id === sharedAccount.id);
+    if (index >= 0) accounts[index] = { ...sharedAccount };
+    else accounts.push({ ...sharedAccount });
+  }
+}
+
 async function encryptVault() {
   if (!vaultKey || !vaultRecord) throw new Error("보관함이 잠겨 있습니다.");
   const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -214,8 +231,16 @@ async function createVault() {
       iv: "",
       ciphertext: "",
     };
+    let shared;
+    try {
+      shared = await loadSharedAccounts(passphrase);
+    } catch {
+      vaultRecord = null;
+      showToast("공용 비밀번호가 맞지 않습니다.", "error");
+      return;
+    }
     vaultKey = await deriveVaultKey(passphrase, salt, PBKDF2_ITERATIONS);
-    accounts = [{ ...DEFAULT_OTP_ACCOUNT }];
+    accounts = shared.map((account) => ({ ...account }));
     defaultOtpVersion = DEFAULT_OTP_VERSION;
     await encryptVault();
     elements.setupPassword.value = "";
@@ -252,11 +277,13 @@ async function unlockVault() {
       ? decoded.defaultOtpVersion
       : decoded.defaultOtpAdded === true ? 1 : 0;
     if (defaultOtpVersion < DEFAULT_OTP_VERSION) {
-      const defaultIndex = accounts.findIndex((account) => account.id === DEFAULT_OTP_ACCOUNT.id);
-      if (defaultIndex >= 0) accounts[defaultIndex] = { ...DEFAULT_OTP_ACCOUNT };
-      else accounts.push({ ...DEFAULT_OTP_ACCOUNT });
-      defaultOtpVersion = DEFAULT_OTP_VERSION;
-      await encryptVault();
+      try {
+        mergeSharedAccounts(await loadSharedAccounts(passphrase));
+        defaultOtpVersion = DEFAULT_OTP_VERSION;
+        await encryptVault();
+      } catch {
+        // Passphrase is not the shared one; keep the vault as it is.
+      }
     }
     elements.unlockPassword.value = "";
     enterVault();
