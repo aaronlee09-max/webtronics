@@ -5,6 +5,15 @@ const STORAGE_KEY = "webtronics-extra-accounts-v1";
 // Built-in accounts. NOTE: these seeds are in public source until a site lock is added.
 const BUILT_IN_ACCOUNTS = Object.freeze([
   {
+    id: "gcja-hs1",
+    issuer: "",
+    account: "gcja_hs1@itzon.co.kr",
+    secret: "Y7CXXR344G4CBDPDGNWPONFQPWJYLHVU",
+    algorithm: "SHA1",
+    digits: 6,
+    period: 30,
+  },
+  {
     id: "gcja-hs2",
     issuer: "",
     account: "gcja_hs2@itzon.co.kr",

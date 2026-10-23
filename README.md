@@ -3,7 +3,7 @@
 A small, dependency-free web page that shows time-based one-time codes (TOTP, RFC 6238) in a Google Authenticator style.
 
 - Large grouped code per account, countdown pie, tap a row to copy.
-- One built-in account (gcja_hs2@itzon.co.kr).
+- Built-in accounts: gcja_hs1@itzon.co.kr, gcja_hs2@itzon.co.kr.
 - "+" adds more accounts from an `otpauth://` link or a Base32 key; those are stored only in the visitor's browser (localStorage).
 - Run tests with `npm test`; preview with `python3 -m http.server 8000`.
 
