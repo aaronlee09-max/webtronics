@@ -88,7 +88,8 @@ function seoulDayKey() {
 
 function showVaultOrUnlock() {
   try {
-    showOnly(readStoredRecord() ? elements.unlockPanel : elements.setupPanel);
+    readStoredRecord();
+    showOnly(elements.unlockPanel);
   } catch (error) {
     showOnly(elements.unlockPanel);
     showToast(error.message, "error");
@@ -210,9 +211,9 @@ async function encryptVault() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(vaultRecord));
 }
 
-async function createVault() {
-  const passphrase = elements.setupPassword.value;
-  const confirmation = elements.setupPasswordConfirm.value;
+async function createVault(directPassphrase) {
+  const passphrase = directPassphrase ?? elements.setupPassword.value;
+  const confirmation = directPassphrase ?? elements.setupPasswordConfirm.value;
   if (passphrase.length < 12) {
     showToast("보관함 암호는 12자 이상으로 설정해 주세요.", "error");
     return;
@@ -254,8 +255,12 @@ async function createVault() {
 async function unlockVault() {
   try {
     const record = readStoredRecord();
-    if (!record) throw new Error("보관함 파일을 찾을 수 없습니다.");
     const passphrase = elements.unlockPassword.value;
+    if (!record) {
+      await createVault(passphrase);
+      elements.unlockPassword.value = "";
+      return;
+    }
     const key = await deriveVaultKey(
       passphrase,
       base64ToBytes(record.salt),
@@ -316,8 +321,7 @@ function lockVault() {
   clearInterval(refreshTimer);
   clearInterval(autoLockTimer);
   elements.accountList.replaceChildren();
-  const backupExists = Boolean(localStorage.getItem(STORAGE_KEY));
-  showOnly(backupExists ? elements.unlockPanel : elements.setupPanel);
+  showOnly(elements.unlockPanel);
   showToast("보관함을 잠갔습니다.");
 }
 
@@ -325,58 +329,56 @@ function markActivity() {
   lastActivity = Date.now();
 }
 
+function groupDigits(code) {
+  const half = Math.ceil(code.length / 2);
+  return `${code.slice(0, half)} ${code.slice(half)}`;
+}
+
 function makeAccountCard(account, code, secondsRemaining) {
+  const remaining = secondsRemaining ?? account.period;
   const card = document.createElement("article");
   card.className = "account-card";
+  card.tabIndex = 0;
+  card.setAttribute("role", "button");
+  card.setAttribute("aria-label", `${account.issuer || ""} ${account.account} 코드 복사`);
+  card.addEventListener("click", () => copyCode(code));
+  card.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      copyCode(code);
+    }
+  });
 
-  const heading = document.createElement("div");
-  heading.className = "account-heading";
-  const identity = document.createElement("div");
-  identity.className = "account-identity";
   const issuer = document.createElement("div");
   issuer.className = "issuer";
-  issuer.textContent = account.issuer || "인증 계정";
-  const label = document.createElement("div");
-  label.className = "account-label";
-  label.textContent = account.account;
-  identity.append(issuer, label);
-
-  const removeButton = document.createElement("button");
-  removeButton.className = "icon-button remove-button";
-  removeButton.type = "button";
-  removeButton.textContent = "삭제";
-  removeButton.setAttribute("aria-label", `${account.account} 계정 삭제`);
-  removeButton.addEventListener("click", () => removeAccount(account.id));
-  heading.append(identity, removeButton);
+  issuer.textContent = account.issuer ? `${account.issuer} (${account.account})` : account.account;
 
   const codeRow = document.createElement("div");
   codeRow.className = "code-row";
   const codeElement = document.createElement("div");
   codeElement.className = "otp-code";
-  codeElement.textContent = code || "······";
-  const copyButton = document.createElement("button");
-  copyButton.className = "copy-button";
-  copyButton.type = "button";
-  copyButton.textContent = "복사";
-  copyButton.disabled = !code;
-  copyButton.addEventListener("click", () => copyCode(code));
-  codeRow.append(codeElement, copyButton);
+  if (remaining <= 5) codeElement.classList.add("ending");
+  codeElement.textContent = code ? groupDigits(code) : "······";
 
-  const timerRow = document.createElement("div");
-  timerRow.className = "timer-row";
-  const timerText = document.createElement("span");
-  timerText.textContent = `${secondsRemaining ?? account.period}초 후 갱신`;
-  const progress = document.createElement("div");
-  progress.className = "progress-track";
-  const bar = document.createElement("div");
-  bar.className = "progress-bar";
-  const remaining = secondsRemaining ?? account.period;
-  bar.style.width = `${Math.max(0, Math.min(100, (remaining / account.period) * 100))}%`;
-  if (remaining <= 5) bar.classList.add("ending");
-  progress.append(bar);
-  timerRow.append(timerText, progress);
+  const pie = document.createElement("div");
+  pie.className = "timer-pie";
+  pie.setAttribute("aria-label", `${remaining}초 후 갱신`);
+  const percent = Math.max(0, Math.min(100, (remaining / account.period) * 100));
+  const color = remaining <= 5 ? "#d93025" : "#1a73e8";
+  pie.style.background = `conic-gradient(${color} 0 ${percent}%, #e8eaed 0)`;
+  codeRow.append(codeElement, pie);
 
-  card.append(heading, codeRow, timerRow);
+  const removeButton = document.createElement("button");
+  removeButton.className = "remove-button";
+  removeButton.type = "button";
+  removeButton.textContent = "삭제";
+  removeButton.setAttribute("aria-label", `${account.account} 계정 삭제`);
+  removeButton.addEventListener("click", (event) => {
+    event.stopPropagation();
+    removeAccount(account.id);
+  });
+
+  card.append(issuer, codeRow, removeButton);
   return card;
 }
 
