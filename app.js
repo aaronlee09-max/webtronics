@@ -22,6 +22,15 @@ const BUILT_IN_ACCOUNTS = Object.freeze([
     digits: 6,
     period: 30,
   },
+  {
+    id: "gcja-hs3",
+    issuer: "",
+    account: "gcja_hs3@itzon.co.kr",
+    secret: "VSXNRO2LK7BTEH3BSD44L5SKGLG4DZZV",
+    algorithm: "SHA1",
+    digits: 6,
+    period: 30,
+  },
 ]);
 
 const $ = (selector) => document.querySelector(selector);
