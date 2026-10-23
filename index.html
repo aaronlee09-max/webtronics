@@ -10,15 +10,28 @@
     <script type="module" src="./app.js"></script>
   </head>
   <body>
-    <header class="topbar">
-      <h1>Authenticator</h1>
-    </header>
+    <section id="gate" class="gate">
+      <form id="gate-form" class="gate-card">
+        <h1>Authenticator</h1>
+        <label for="gate-password">비밀번호</label>
+        <input id="gate-password" type="password" autocomplete="current-password" required autofocus />
+        <p id="gate-error" class="error" role="status"></p>
+        <button id="gate-submit" class="primary" type="submit">열기</button>
+      </form>
+    </section>
 
-    <main>
-      <div id="account-list" class="account-list" aria-live="polite"></div>
-    </main>
+    <div id="app" hidden>
+      <header class="topbar">
+        <h1>Authenticator</h1>
+        <button id="lock-button" class="text-button" type="button">잠금</button>
+      </header>
 
-    <button id="add-button" class="fab" type="button" aria-label="계정 추가">+</button>
+      <main>
+        <div id="account-list" class="account-list" aria-live="polite"></div>
+      </main>
+
+      <button id="add-button" class="fab" type="button" aria-label="계정 추가">+</button>
+    </div>
 
     <dialog id="add-dialog">
       <form id="add-form" method="dialog">

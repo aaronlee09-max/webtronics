@@ -2,36 +2,13 @@ import { generateTotp, parseOtpAuthUri } from "./totp.js";
 
 const STORAGE_KEY = "webtronics-extra-accounts-v1";
 
-// Built-in accounts. NOTE: these seeds are in public source until a site lock is added.
-const BUILT_IN_ACCOUNTS = Object.freeze([
-  {
-    id: "gcja-hs1",
-    issuer: "",
-    account: "gcja_hs1@itzon.co.kr",
-    secret: "Y7CXXR344G4CBDPDGNWPONFQPWJYLHVU",
-    algorithm: "SHA1",
-    digits: 6,
-    period: 30,
-  },
-  {
-    id: "gcja-hs2",
-    issuer: "",
-    account: "gcja_hs2@itzon.co.kr",
-    secret: "GDOQOFS5F3P3QJOXI4NDKVTHVNSG4K2N",
-    algorithm: "SHA1",
-    digits: 6,
-    period: 30,
-  },
-  {
-    id: "gcja-hs3",
-    issuer: "",
-    account: "gcja_hs3@itzon.co.kr",
-    secret: "VSXNRO2LK7BTEH3BSD44L5SKGLG4DZZV",
-    algorithm: "SHA1",
-    digits: 6,
-    period: 30,
-  },
-]);
+const SEEDS_URL = "./seeds.enc.json";
+const decoder = new TextDecoder();
+const encoder = new TextEncoder();
+
+// Shared accounts exist only as AES-GCM ciphertext; they are filled in after unlock.
+let builtIn = [];
+let unlocked = false;
 
 const $ = (selector) => document.querySelector(selector);
 const list = $("#account-list");
@@ -56,7 +33,7 @@ function saveExtra(accounts) {
 }
 
 let extra = loadExtra();
-const allAccounts = () => [...BUILT_IN_ACCOUNTS, ...extra];
+const allAccounts = () => [...builtIn, ...extra];
 
 let toastTimer;
 function showToast(message) {
@@ -206,5 +183,63 @@ $("#add-form").addEventListener("submit", async (event) => {
   }
 });
 
-render();
-setInterval(refresh, 1000);
+function base64ToBytes(value) {
+  return Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
+}
+
+async function decryptSeeds(password) {
+  const response = await fetch(SEEDS_URL, { cache: "no-store" });
+  if (!response.ok) throw new Error("seed file");
+  const record = await response.json();
+  const material = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: base64ToBytes(record.salt), iterations: record.iterations, hash: "SHA-256" },
+    material,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["decrypt"],
+  );
+  const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: base64ToBytes(record.iv) }, key, base64ToBytes(record.ciphertext));
+  const decoded = JSON.parse(decoder.decode(plain));
+  if (!Array.isArray(decoded.accounts)) throw new Error("format");
+  return decoded.accounts;
+}
+
+function showApp(show) {
+  $("#gate").hidden = show;
+  $("#app").hidden = !show;
+}
+
+async function unlock(event) {
+  event.preventDefault();
+  const input = $("#gate-password");
+  const error = $("#gate-error");
+  error.textContent = "";
+  $("#gate-submit").disabled = true;
+  try {
+    builtIn = await decryptSeeds(input.value);
+    unlocked = true;
+    input.value = "";
+    showApp(true);
+    render();
+  } catch {
+    error.textContent = "비밀번호가 맞지 않습니다.";
+    input.select();
+  } finally {
+    $("#gate-submit").disabled = false;
+  }
+}
+
+function lock() {
+  unlocked = false;
+  builtIn = [];
+  rows.clear();
+  list.replaceChildren();
+  showApp(false);
+  $("#gate-password").focus();
+}
+
+$("#gate-form").addEventListener("submit", unlock);
+$("#lock-button").addEventListener("click", lock);
+setInterval(() => { if (unlocked) refresh(); }, 1000);
+showApp(false);
