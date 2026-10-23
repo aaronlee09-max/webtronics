@@ -1,34 +1,12 @@
-# Local TOTP Authenticator
+# Authenticator
 
-A dependency-free, static browser app for generating time-based one-time passwords (TOTP).
+A small, dependency-free web page that shows time-based one-time codes (TOTP, RFC 6238) in a Google Authenticator style.
 
-## Features
+- Large grouped code per account, countdown pie, tap a row to copy.
+- Two built-in ChatGPT accounts ("chatgpt 1", "chatgpt 2").
+- "+" adds more accounts from an `otpauth://` link or a Base32 key; those are stored only in the visitor's browser (localStorage).
+- Run tests with `npm test`; preview with `python3 -m http.server 8000`.
 
-- RFC 6238 TOTP codes with SHA-1, SHA-256, or SHA-512; six or eight digits; and configurable time period.
-- Manual Base32 secret entry, `otpauth://totp/…` URI import, and camera QR scanning where the browser supports `BarcodeDetector`.
-- AES-GCM encrypted local vault. A passphrase-derived key is made with PBKDF2/SHA-256; the key and decrypted entries stay in memory only while the vault is unlocked.
-- Five-minute inactivity lock and encrypted JSON backup/restore.
-- A daily `YYMMDD` screen prompt based on Asia/Seoul time; this is a cosmetic prompt, not authentication.
-- No analytics, external JavaScript, account login, backend, or secret synchronization.
+## Security note
 
-## Run locally
-
-Use HTTPS for the browser Web Crypto API and camera access. For a quick local preview, run a static server such as `python3 -m http.server 8000` and open `http://localhost:8000`; localhost is treated as a secure context by modern browsers. Run tests with `npm test` (Node.js, no installed dependencies required).
-
-On GitHub Pages, the app is static. Account secrets are not uploaded by the application, but the host delivers the JavaScript that handles them.
-
-## Security limits
-
-This is a prototype, not an independently audited authenticator. Encryption at rest helps protect a copied browser-storage file, but it does not protect secrets while the vault is unlocked. Anyone who can change the hosted JavaScript could change it to capture the passphrase or TOTP seeds. Do not use this site for high-value accounts unless you have reviewed and trust the code and hosting; a reputable native authenticator is safer for those accounts. Keep an encrypted backup in a secure location. If the vault passphrase is lost, this app cannot recover it.
-
-The shared ChatGPT OTP seeds (including "chatgpt 2") are not stored in plain text. `seeds.enc.json` holds them as AES-GCM ciphertext (PBKDF2/SHA-256 key from a shared club password), and the vault passphrase must be that password to load them. Seeds that were committed in plain text earlier remain in git history, so re-enroll those authenticators.
-
-The daily prompt is calculated in public client-side code, so anyone can determine or bypass it. It only adds a screen; the shared password is the real lock.
-
-The app supports TOTP provisioning URIs; it does not parse Google Authenticator's multi-account migration export or HOTP provisioning. Camera QR scanning depends on browser support; the setup URI can also be pasted manually.
-
-## References
-
-- [RFC 6238: TOTP](https://www.rfc-editor.org/rfc/rfc6238.html) — algorithm, time-step calculation, and test vectors.
-- [Google Authenticator Key URI Format](https://github.com/google/google-authenticator/wiki/Key-Uri-Format) — `otpauth://` provisioning URI structure.
-- [MDN: SubtleCrypto](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto) — browser cryptography API and security caveats.
+There is no site lock yet. The built-in seeds are plain text in `app.js` of a public repository, so anyone can generate those codes. A password-locked version (encrypted seeds, single password screen) exists in git history at commit `9b74a7d` and can be restored when the lock is added.
