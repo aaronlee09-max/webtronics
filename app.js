@@ -1,39 +1,25 @@
-import { generateTotp, parseOtpAuthUri } from "./totp.js";
-
-const STORAGE_KEY = "webtronics-extra-accounts-v1";
+import { generateTotp } from "./totp.js";
 
 const SEEDS_URL = "./seeds.enc.json";
+const LEGACY_STORAGE_KEY = "webtronics-extra-accounts-v1";
 const decoder = new TextDecoder();
 const encoder = new TextEncoder();
 
-// Shared accounts exist only as AES-GCM ciphertext; they are filled in after unlock.
-let builtIn = [];
+// Accounts exist only as AES-GCM ciphertext; they are filled in after unlock.
+// Adding accounts from the page is intentionally not supported.
+let accounts = [];
 let unlocked = false;
 
 const $ = (selector) => document.querySelector(selector);
 const list = $("#account-list");
-const dialog = $("#add-dialog");
 const toast = $("#toast");
 
-function loadExtra() {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+// Remove accounts that an earlier version may have stored in this browser.
+try {
+  localStorage.removeItem(LEGACY_STORAGE_KEY);
+} catch {
+  // Storage may be unavailable; nothing to clean up then.
 }
-
-function saveExtra(accounts) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts));
-  } catch {
-    showToast("이 브라우저에는 저장할 수 없습니다.");
-  }
-}
-
-let extra = loadExtra();
-const allAccounts = () => [...builtIn, ...extra];
 
 let toastTimer;
 function showToast(message) {
@@ -90,34 +76,18 @@ function buildRow(account) {
     }
   });
 
-  if (extra.some((item) => item.id === account.id)) {
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.className = "remove-button";
-    remove.textContent = "삭제";
-    remove.setAttribute("aria-label", `${account.account} 삭제`);
-    remove.addEventListener("click", (event) => {
-      event.stopPropagation();
-      if (!confirm(`"${account.account}"을(를) 삭제할까요?`)) return;
-      extra = extra.filter((item) => item.id !== account.id);
-      saveExtra(extra);
-      render();
-    });
-    row.append(remove);
-  }
-
   rows.set(account.id, state);
   return row;
 }
 
 function render() {
   rows.clear();
-  list.replaceChildren(...allAccounts().map(buildRow));
+  list.replaceChildren(...accounts.map(buildRow));
   refresh();
 }
 
 async function refresh() {
-  for (const account of allAccounts()) {
+  for (const account of accounts) {
     const state = rows.get(account.id);
     if (!state) continue;
     try {
@@ -127,61 +97,12 @@ async function refresh() {
       const ending = secondsRemaining <= 5;
       state.codeEl.classList.toggle("ending", ending);
       const percent = Math.max(0, Math.min(100, (secondsRemaining / account.period) * 100));
-      state.pieEl.style.background = `conic-gradient(${ending ? "#d93025" : "#1a73e8"} 0 ${percent}%, #e8eaed 0)`;
+      state.pieEl.style.background = `conic-gradient(${ending ? "#f48771" : "#569cd6"} 0 ${percent}%, #3c3c3c 0)`;
     } catch {
       state.codeEl.textContent = "오류";
     }
   }
 }
-
-function openDialog() {
-  $("#add-uri").value = "";
-  $("#add-name").value = "";
-  $("#add-error").textContent = "";
-  dialog.showModal();
-}
-
-function addFromInput() {
-  const raw = $("#add-uri").value.trim();
-  const name = $("#add-name").value.trim();
-  let parsed;
-  try {
-    if (/^otpauth:\/\//i.test(raw)) {
-      parsed = parseOtpAuthUri(raw);
-    } else {
-      parsed = {
-        issuer: "",
-        account: name || "새 계정",
-        secret: raw.replace(/[\s=-]/g, "").toUpperCase(),
-        algorithm: "SHA1",
-        digits: 6,
-        period: 30,
-      };
-    }
-    // Throws if the secret is not valid Base32.
-    return generateTotp(parsed).then(() => {
-      if (name) parsed.account = name;
-      extra = [...extra, { id: crypto.randomUUID(), ...parsed }];
-      saveExtra(extra);
-      return true;
-    });
-  } catch (error) {
-    return Promise.reject(error);
-  }
-}
-
-$("#add-button").addEventListener("click", openDialog);
-$("#add-cancel").addEventListener("click", () => dialog.close());
-$("#add-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  try {
-    await addFromInput();
-    dialog.close();
-    render();
-  } catch (error) {
-    $("#add-error").textContent = `추가하지 못했습니다: ${error.message}`;
-  }
-});
 
 function base64ToBytes(value) {
   return Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
@@ -217,7 +138,7 @@ async function unlock(event) {
   error.textContent = "";
   $("#gate-submit").disabled = true;
   try {
-    builtIn = await decryptSeeds(input.value);
+    accounts = await decryptSeeds(input.value);
     unlocked = true;
     input.value = "";
     showApp(true);
@@ -232,7 +153,7 @@ async function unlock(event) {
 
 function lock() {
   unlocked = false;
-  builtIn = [];
+  accounts = [];
   rows.clear();
   list.replaceChildren();
   showApp(false);

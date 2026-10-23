@@ -3,50 +3,48 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#ffffff" />
+    <meta name="theme-color" content="#1e1e1e" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'" />
-    <title>Authenticator</title>
+    <title>세미콜론 ; 인증 코드</title>
     <link rel="stylesheet" href="./app.css" />
     <script type="module" src="./app.js"></script>
   </head>
   <body>
     <section id="gate" class="gate">
-      <form id="gate-form" class="gate-card">
-        <h1>Authenticator</h1>
-        <label for="gate-password">비밀번호</label>
-        <input id="gate-password" type="password" autocomplete="current-password" required autofocus />
-        <p id="gate-error" class="error" role="status"></p>
-        <button id="gate-submit" class="primary" type="submit">열기</button>
+      <form id="gate-form" class="term" autocomplete="on">
+        <div class="term-bar" aria-hidden="true">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="term-title">semicolon.sh</span>
+        </div>
+        <div class="term-body">
+          <h1 class="club">세미콜론 <span class="kw">Semicolon</span></h1>
+          <p class="sub">// 코딩 동아리 전용 인증 코드 보관함</p>
+
+          <p class="cmd" aria-hidden="true"><span class="prompt">$</span> <span class="typed" style="--n:23"><span class="fn">club</span>.<span class="fn">login</span>(<span class="var">password</span>);</span><span class="caret"></span></p>
+
+          <label for="gate-password" class="sr-only">비밀번호</label>
+          <div class="field">
+            <span class="prompt" aria-hidden="true">&gt;</span>
+            <input id="gate-password" type="password" autocomplete="current-password" placeholder="password" required autofocus />
+          </div>
+          <p id="gate-error" class="gate-error" role="status"></p>
+          <button id="gate-submit" class="run" type="submit"><span aria-hidden="true">▶</span> 실행</button>
+          <p class="foot">// 동아리원만 입장 · 비밀번호는 한 번만 입력하면 돼요</p>
+        </div>
       </form>
     </section>
 
     <div id="app" hidden>
       <header class="topbar">
-        <h1>Authenticator</h1>
+        <h1>세미콜론<span class="semi">;</span></h1>
         <button id="lock-button" class="text-button" type="button">잠금</button>
       </header>
 
       <main>
         <div id="account-list" class="account-list" aria-live="polite"></div>
       </main>
-
-      <button id="add-button" class="fab" type="button" aria-label="계정 추가">+</button>
     </div>
 
-    <dialog id="add-dialog">
-      <form id="add-form" method="dialog">
-        <h2>계정 추가</h2>
-        <label for="add-uri">설정 링크 (otpauth://…) 또는 설정 키</label>
-        <textarea id="add-uri" rows="3" spellcheck="false" autocomplete="off" required placeholder="otpauth://totp/서비스:계정?secret=… 또는 BJFC…"></textarea>
-        <label for="add-name">이름 <span>(키만 넣을 때)</span></label>
-        <input id="add-name" type="text" maxlength="80" autocomplete="off" placeholder="예: chatgpt 3" />
-        <p id="add-error" class="error" role="status"></p>
-        <div class="actions">
-          <button id="add-cancel" type="button" class="text-button">취소</button>
-          <button id="add-save" type="submit" class="text-button strong">추가</button>
-        </div>
-      </form>
-    </dialog>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
   </body>
