@@ -22,7 +22,7 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
-      - name: Install XcodeGen
+      - name: Install XcodeGen build dependency
         run: brew install xcodegen
 
       - name: Generate valid Xcode project
