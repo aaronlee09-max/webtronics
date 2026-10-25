@@ -60,13 +60,23 @@ function buildRow(account) {
   const code = document.createElement("div");
   code.className = "otp-code";
   code.textContent = "······";
+
+  const timer = document.createElement("div");
+  timer.className = "timer";
+  timer.setAttribute("aria-label", "새 코드까지 남은 시간");
+
+  const seconds = document.createElement("span");
+  seconds.className = "timer-seconds";
+  seconds.textContent = "--초";
+
   const pie = document.createElement("div");
   pie.className = "timer-pie";
-  codeRow.append(code, pie);
-
+  pie.setAttribute("aria-hidden", "true");
+  timer.append(seconds, pie);
+  codeRow.append(code, timer);
   row.append(name, codeRow);
 
-  const state = { code: "", codeEl: code, pieEl: pie };
+  const state = { code: "", codeEl: code, pieEl: pie, secondsEl: seconds };
   const copy = () => state.code && copyCode(state.code);
   row.addEventListener("click", copy);
   row.addEventListener("keydown", (event) => {
@@ -96,10 +106,15 @@ async function refresh() {
       state.codeEl.textContent = groupDigits(code);
       const ending = secondsRemaining <= 5;
       state.codeEl.classList.toggle("ending", ending);
+      state.secondsEl.textContent = `${secondsRemaining}초`;
+      state.secondsEl.classList.toggle("ending", ending);
+      state.pieEl.classList.toggle("ending", ending);
       const percent = Math.max(0, Math.min(100, (secondsRemaining / account.period) * 100));
       state.pieEl.style.background = `conic-gradient(${ending ? "#f48771" : "#569cd6"} 0 ${percent}%, #3c3c3c 0)`;
+      state.secondsEl.setAttribute("aria-label", `새 코드까지 ${secondsRemaining}초`);
     } catch {
       state.codeEl.textContent = "오류";
+      state.secondsEl.textContent = "--초";
     }
   }
 }
