@@ -157,9 +157,9 @@ enum WebtronicsCrypto {
         let algorithm: CCHmacAlgorithm
         let digestLength: Int
         switch account.algorithm.uppercased() {
-        case "SHA1": algorithm = CCHmacAlgorithm(kCCHmacAlgSHA1); digestLength = CC_SHA1_DIGEST_LENGTH
-        case "SHA256": algorithm = CCHmacAlgorithm(kCCHmacAlgSHA256); digestLength = CC_SHA256_DIGEST_LENGTH
-        case "SHA512": algorithm = CCHmacAlgorithm(kCCHmacAlgSHA512); digestLength = CC_SHA512_DIGEST_LENGTH
+        case "SHA1": algorithm = CCHmacAlgorithm(kCCHmacAlgSHA1); digestLength = Int(CC_SHA1_DIGEST_LENGTH)
+        case "SHA256": algorithm = CCHmacAlgorithm(kCCHmacAlgSHA256); digestLength = Int(CC_SHA256_DIGEST_LENGTH)
+        case "SHA512": algorithm = CCHmacAlgorithm(kCCHmacAlgSHA512); digestLength = Int(CC_SHA512_DIGEST_LENGTH)
         default: throw AuthenticatorError.unsupportedAlgorithm
         }
 
