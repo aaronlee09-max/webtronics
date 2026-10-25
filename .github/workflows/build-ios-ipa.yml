@@ -22,6 +22,12 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate valid Xcode project
+        run: xcodegen generate --spec WebtronicsIOS/project.yml --project WebtronicsIOS/Webtronics.xcodeproj
+
       - name: Build iOS app (unsigned)
         run: |
           set -o pipefail
