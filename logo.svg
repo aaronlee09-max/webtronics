@@ -1,6 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
-  <title id="title">Webtronics</title>
-  <rect width="128" height="128" rx="28" fill="#fff"/>
-  <path d="M13 34 C24 25 33 31 39 43 L52 70 L69 31 C73 22 84 24 88 32 L102 61 C106 70 100 80 91 82 C82 84 77 77 73 69 L67 57 L54 88 C50 98 38 100 32 89 L12 51 C8 44 8 38 13 34Z" fill="#1769e8"/>
-  <path d="M72 88 C83 74 92 64 109 54 C117 49 124 54 120 62 C113 77 95 92 81 103 C74 109 66 99 72 88Z" fill="#4f8cff"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="t"><title id="t">Webtronics · Semicolon</title><rect width="128" height="128" rx="28" fill="#111827"/><rect x="13" y="16" width="102" height="96" rx="17" fill="#1f2937" stroke="#374151" stroke-width="2"/><circle cx="27" cy="29" r="3.5" fill="#fb7185"/><circle cx="38" cy="29" r="3.5" fill="#fbbf24"/><circle cx="49" cy="29" r="3.5" fill="#34d399"/><path d="M35 52l14 12-14 12M56 79h15" fill="none" stroke="#60a5fa" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="89" cy="61" r="8" fill="#34d399"/><path d="M89 70v10" stroke="#34d399" stroke-width="7" stroke-linecap="round"/><path d="M27 96h74" stroke="#4b5563" stroke-width="3" stroke-linecap="round"/></svg>
