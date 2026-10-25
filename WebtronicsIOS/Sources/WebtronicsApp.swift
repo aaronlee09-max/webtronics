@@ -39,7 +39,7 @@ struct Account: Decodable, Identifiable {
 
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        storedID = try values.decodeIfPresent(String.self, forKey: .storedID)
+        if let stringID = try? values.decode(String.self, forKey: .storedID) { storedID = stringID } else if let numericID = try? values.decode(Int.self, forKey: .storedID) { storedID = String(numericID) } else { storedID = nil }
         issuer = try values.decodeIfPresent(String.self, forKey: .issuer)
         account = try values.decode(String.self, forKey: .account)
         secret = try values.decode(String.self, forKey: .secret)
@@ -83,6 +83,7 @@ enum WebtronicsCrypto {
 
         let passwordData = Data(password.utf8)
         var keyData = Data(count: 32)
+        let keyLength = keyData.count
         let status = keyData.withUnsafeMutableBytes { keyBuffer in
             salt.withUnsafeBytes { saltBuffer in
                 passwordData.withUnsafeBytes { passwordBuffer in
@@ -95,7 +96,7 @@ enum WebtronicsCrypto {
                         CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256),
                         UInt32(record.iterations),
                         keyBuffer.bindMemory(to: UInt8.self).baseAddress,
-                        keyData.count
+                        keyLength
                     )
                 }
             }
