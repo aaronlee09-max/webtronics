@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Webtronics</title>
+  <rect width="128" height="128" rx="28" fill="#fff"/>
+  <path d="M13 34 C24 25 33 31 39 43 L52 70 L69 31 C73 22 84 24 88 32 L102 61 C106 70 100 80 91 82 C82 84 77 77 73 69 L67 57 L54 88 C50 98 38 100 32 89 L12 51 C8 44 8 38 13 34Z" fill="#1769e8"/>
+  <path d="M72 88 C83 74 92 64 109 54 C117 49 124 54 120 62 C113 77 95 92 81 103 C74 109 66 99 72 88Z" fill="#4f8cff"/>
+</svg>
